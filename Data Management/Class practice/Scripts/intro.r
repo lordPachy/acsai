@@ -33,3 +33,5 @@ seqs > 4
 our_names <- c("Chelsea", "John", "Jim", "Bianca", "Amy", "John", "Jake", "Tony", "Sam")
 ifelse(our_names == "John", "J-Money", our_names)
 which(our_names == "John")
+library("maps")
+1 +2 
