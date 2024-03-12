@@ -35,3 +35,4 @@ ifelse(our_names == "John", "J-Money", our_names)
 which(our_names == "John")
 library("maps")
 1 +2 
+mean(c(26, 28, 22, 23, 18, 31, 30))
