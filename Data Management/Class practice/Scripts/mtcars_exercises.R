@@ -12,4 +12,4 @@ ggplot(data = mtcars, mapping = aes(x = wt, y = mpg)) + geom_point() + geom_smoo
 #Exercise 2
 ggplot(data = mtcars, mapping = aes(x = hp, y = qsec)) + geom_point(mapping = aes(color = vs)) + geom_smooth(method = "lm")
 
-                                                     
+#Exercise 3

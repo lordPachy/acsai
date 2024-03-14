@@ -1,4 +1,5 @@
-#Sections 1.1-1.2
+#SECTIONS 1.1-1.2
+install.packages("tidyverse")
 library(tidyverse)
 library(palmerpenguins)
 library(ggthemes)
@@ -13,7 +14,7 @@ ggplot(data = penguins,
          x = "Flipper length (mm)", y = "Body mass (g)",
          color = "Species", shape = "Species"
        ) + scale_color_colorblind()
-#Exercises 1.2.5
+#EXERCISES 1.2.5
 #Exercise 3
 ggplot(data = penguins,
        mapping = aes(x = bill_length_mm, y = bill_depth_mm, color = species, shape = species)) + geom_point() + geom_smooth(method = "lm") + labs(
@@ -72,3 +73,47 @@ ggplot() +
     data = penguins,
     mapping = aes(x = flipper_length_mm, y = body_mass_g)
   )
+#SECTIONS 1.3-1.4
+#Stripping down ggplot syntax
+ggplot(penguins, aes(x= flipper_length_mm, y=body_mass_g)) + geom_point()
+penguins |> ggplot(aes(x = flipper_length_mm, y = body_mass_g)) + geom_point()
+#Bar charts
+ggplot(penguins, aes(x=species)) + geom_bar()
+#To have it ordered on the base of frequency, it is possible to transform to a factor:
+ggplot(penguins, aes(x=fct_infreq(species))) + geom_bar()
+#Histograms
+ggplot(penguins, aes(x = body_mass_g)) + geom_histogram(binwidth = 200) #binwidth reunites the domain of body_mass_g into strips
+#Density plots
+ggplot(penguins, aes(x = body_mass_g)) + geom_density()
+#EXERCISES 1.4.3
+#Exercise 1
+ggplot(penguins, aes(y = species)) + geom_bar()
+#Exercise 2
+ggplot(penguins, aes(x = species)) +
+  geom_bar(color = "red")
+
+ggplot(penguins, aes(x = species)) +
+  geom_bar(fill = "red")
+#Exercise 3
+ggplot(penguins, aes(x = body_mass_g)) + geom_histogram(bins = 1)
+#Exercise 4
+library(tidyverse)
+summary(diamonds)
+ggplot(diamonds, aes(x = carat)) + geom_histogram(binwidth = 0.5)
+#SECTIONS 1.5-
+#Boxplots
+ggplot(penguins, aes(x = species, y = body_mass_g)) + geom_boxplot()
+#Density plots with colours
+ggplot(penguins, aes(x = body_mass_g, color = species)) + geom_density(linewidth = 0.75)
+#Density plots filled and with transparency
+ggplot(penguins, aes(x = body_mass_g, color = species, fill=species)) + geom_density(alpha = 0.5)
+#Stacked bar plots
+ggplot(penguins, aes(x = island, fill = species)) + geom_bar()
+ggplot(penguins, aes(x = island, fill = species)) + geom_bar(position = "fill")
+#Three variables in a graph
+ggplot(penguins, aes(x = flipper_length_mm, y = body_mass_g)) +
+  geom_point(aes(color = species, shape = island))
+ggplot(penguins, aes(x = flipper_length_mm, y = body_mass_g, color = species, shape = island)) +
+  geom_point()
+#Facets
+ggplot(penguins, aes(x = flipper_length_mm, y = body_mass_g)) + geom_point(aes(color = species, shape = species)) + facet_wrap(~island)   #the argument of facet_wrap must be a formula, and in particular it needs to be categorical
