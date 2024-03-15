@@ -117,3 +117,44 @@ ggplot(penguins, aes(x = flipper_length_mm, y = body_mass_g, color = species, sh
   geom_point()
 #Facets
 ggplot(penguins, aes(x = flipper_length_mm, y = body_mass_g)) + geom_point(aes(color = species, shape = species)) + facet_wrap(~island)   #the argument of facet_wrap must be a formula, and in particular it needs to be categorical
+
+#EXERCISES 1.5.5
+#Exercise 1
+library(ggplot2)
+head(mpg)
+#Exercise 2
+ggplot(mpg, aes(x = displ, y = hwy)) + geom_point()
+ggplot(mpg, aes(x = displ, y = hwy)) + geom_point(aes(color = cty))
+ggplot(mpg, aes(x = displ, y = hwy)) + geom_point(aes(size = cty))
+ggplot(mpg, aes(x = displ, y = hwy)) + geom_point(aes(size = cty, color = cty))
+ggplot(mpg, aes(x = displ, y = hwy)) + geom_point(aes(shape = drv))
+#Exercise 3
+ggplot(mpg, aes(x = displ, y = hwy, linewidth = cty)) + geom_point() + geom_smooth(method = "lm")
+#Exercise 5
+ggplot(penguins, aes(y = bill_depth_mm, x = bill_length_mm)) + geom_point(aes(color = species))
+ggplot(penguins, aes(y = bill_depth_mm, x = bill_length_mm)) + geom_point(aes(color = species)) + facet_wrap(~species)
+#Exercise 6
+ggplot(
+  data = penguins,
+  mapping = aes(
+    x = bill_length_mm, y = bill_depth_mm, 
+    color = species, shape = species
+  )
+) +
+  geom_point() +
+  labs(color = "Species", shape = "Species")
+#Exercise 7
+ggplot(penguins, aes(x = island, fill = species)) +
+  geom_bar(position = "fill")
+ggplot(penguins, aes(x = species, fill = island)) +
+  geom_bar(position = "fill")
+#SECTION 1.6
+ggsave(filename = "penguin-plot.png")
+getwd()
+setwd("home/pachy/Desktop/ACSAI/acsai/Data Management")
+getwd()
+setwd("Desktop/ACSAI/acsai/Data Management")
+setwd("R for Data Science")
+ggplot(penguins, aes(x = island, fill = species)) +
+  geom_bar(position = "fill")
+ggsave(filename = "penguing-plot.pdf", )
