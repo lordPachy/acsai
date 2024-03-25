@@ -7,7 +7,7 @@ authors = ["lordPachy <francescocalzona03@gmail.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.10"
+python = "^3.12"
 opencv-contrib-python = "^4.9.0.80"
 matplotlib = "^3.8.3"
 ipykernel = "^6.29.3"
