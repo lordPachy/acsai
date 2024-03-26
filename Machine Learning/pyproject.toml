@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "machine learning"
+version = "0.1.0"
+description = ""
+authors = ["lordPachy <francescocalzona03@gmail.com>"]
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.12"
+ipykernel = "^6.29.3"
+matplotlib = "^3.8.3"
+scikit-learn = "^1.4.1.post1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
