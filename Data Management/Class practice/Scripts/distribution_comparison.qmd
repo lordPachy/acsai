@@ -1,0 +1,56 @@
+# Exercise 1
+
+Let's import the dataset first
+
+```{r}
+data(iris)
+library(ggplot2)
+ggplot(iris, aes(x = Sepal.Length)) + geom_density()
+```
+
+Now, we can try to simulate a gaussian with the same $u$ and $Var$
+
+```{r}
+x = seq(min(iris$Sepal.Length), max(iris$Sepal.Length), length.out = 100)
+u = mean(iris$Sepal.Length)
+v = var(iris$Sepal.Length)
+gauss = dnorm(x, mean = u, sd = v)
+ggplot(data.frame(x=x, y = gauss), aes(x=x, y=y)) + geom_line()
+```
+
+We can try to compare them together:
+
+```{r}
+#compare = pivot_longer(data = iris, cols = c("Sepal.Width", "Petal.Width"), names_to = "Specie", values_to = "Values")
+```
+
+Let's do some similarity testing:
+
+```{r}
+t.test(iris$Sepal.Length, gauss)
+```
+
+*Kolmogorov-Smirnov* test is useful when the distributions are not exponential.
+
+```{r}
+#ks.test(iris$Sepal.Length, gauss)
+```
+
+# Exercise 2
+
+First, we can calculate the uniform:
+
+```{r}
+pet_min = min(iris$Petal.Width)
+pet_max = max(iris$Petal.Width)
+x = seq(pet_min, pet_max, length.out = 150)
+unif_pet = dunif(x, min = pet_min, max = pet_max)
+ggplot(data.frame(x = x, y = unif_pet), aes(x=x, y=y,)) + geom_line()
+```
+
+Now, we can try to plot them together:
+
+```{r}
+#data = data.frame(x=rep(1:length(iris$Petal.Width),
+               #    variable=rep(paste0('series', 1:3), each=5))
+```
