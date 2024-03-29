@@ -1,26 +1,50 @@
 ---
-title: "28 Quarto"
+title: "Diamond sizes"
+date: 2022-09-12
 format: pdf
-editor: visual
 ---
 
-## Quarto
-
-Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
-
-## Running Code
-
-When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
-
 ```{r}
-1 + 1
+#| label: setup
+#| include: false
+
+library(tidyverse)
+
+smaller <- diamonds |> 
+  filter(carat <= 2.5)
 ```
 
-You can add options to executable code like this
+We have data about `r nrow(diamonds)` diamonds. Only `r nrow(diamonds) - nrow(smaller)` are larger than 2.5 carats. The distribution of the remainder is shown below:
 
 ```{r}
+#| label: plot-smaller-diamonds
 #| echo: false
-2 * 2
+
+smaller |> 
+  ggplot(aes(x = carat)) + 
+  geom_freqpoly(binwidth = 0.01)
 ```
 
-The `echo: false` option disables the printing of code (only output is displayed).
+In quarto, it is possible to write many different types of inputs in the visual editor just by using pressing /.\
+
+term
+
+:   something useful like $4+4$
+
+This is instead is a table \|Col 1\|Col 2\|Col 3\| \|-----\|-----\|-----\| \|Ciao \|Come \|Stai?\|
+
+Ciao superscript^2^ subscript~2~\
+Thes are example of links <https://r4ds.hadley.nz/quarto>\
+[A book](https://r4ds.hadley.nz/quarto)\
+!["Helo"](landscape.jpeg){fig-alt="ciao come stai"}
+```{r}
+```
+
+
+```{r}
+#| label: Label of the code chunk
+
+print("ciao")
+```
+
+The chunk named "setup" will be run before all of the others. Every chunk must be unique.  
