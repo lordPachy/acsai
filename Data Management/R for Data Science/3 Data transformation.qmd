@@ -1,5 +1,6 @@
 ---
 title: "Chapter 3: Data Transformation in R"
+author: "Francesco Calzona"
 format: pdf
 ---
 # SECTION 3.1
@@ -31,7 +32,7 @@ flights |> filter(dep_delay > 120)
 The `%in%` operator combines `==` and `|`:
 
 ```{r}
-#| label: %in%
+#| label: in operator
 flights |> filter(day %in% c(1,3,5))
 ```
 
@@ -78,7 +79,7 @@ flights |> count(origin, dest, sort = TRUE)
 ```
 ### Exercises 3.2.5
 ```{r}
-#| label: Exercise 1
+#| label: Exercise 2.1
 
 glimpse(flights)
 flights |> filter(arr_delay >= 120)
@@ -89,22 +90,22 @@ flights |> filter(arr_delay >= 120 & dep_delay == 0)
 flights |> filter(dep_delay >= 60 & arr_delay <= dep_delay - 30)
 ```
 ```{r}
-#| label: Exercise 2
+#| label: Exercise 2.2
 
 flights |> arrange(desc(dep_delay), dep_time)
 ```
 ```{r}
-#| label: Exercise 3
+#| label: Exercise 2.3
 
 flights |> arrange(desc(distance/air_time))
 ```
 ```{r}
-#| label: Exercise 4
+#| label: Exercise 2.4
 
 flights |> filter(year == 2013) |> count(month, day)
 ```
 ```{r}
-#| label: Exercise 5
+#| label: Exercise 2.5
 
 flights |> filter(distance == max(distance))
 flights |> filter(distance == min(distance))
@@ -203,4 +204,127 @@ flights |> rename(air_time_min = air_time) |> relocate(air_time_min)
 
 flights |> group_by(month)
 ```
-The "grouped" feature is referred as **class**.
+The "grouped" feature is referred as **class**. They are useful to get summaries about single groups.
+```{r}
+#| label: summarize()
+
+flights |> group_by(month) |> summarize(avg_delay = mean(dep_delay, na.rm = TRUE))
+```
+`n()` counts the elements in a certain group.
+```{r}
+#| label: n()
+
+flights |>
+  group_by(month) |> 
+  summarise(avg_delay = mean(dep_delay, na.rm = TRUE), n = n())
+```
+`slice_` functions are useful to get a bit of information from each group.
+```{r}
+#| label: slice_head()
+
+flights |> group_by(month) |> slice_head(n = 1)
+```
+```{r}
+#| label: slice_tail()
+
+flights |> group_by(month) |> slice_tail(n = 1)
+```
+```{r}
+#| label: slice_min()
+
+flights |> group_by(month) |> slice_min(arr_delay, n = 1, with_ties = FALSE)
+```
+`prop` selects a certain proportion of rows inside each group.
+```{r}
+#| label: slice_max()
+
+flights |> group_by(month) |> slice_max(arr_delay, prop = 0.01)
+```
+```{r}
+#| label: slice_sample()
+
+flights |> group_by(month) |> slice_sample(n = 1)
+```
+We can create a group based on multiple variables.
+```{r}
+#| label: multiple group
+
+daily = flights |> group_by(year, month, day)
+daily
+```
+```{r}
+#| label: n() with multiple variables
+
+daily |> summarise(n = n(), .groups = "keep")
+```
+`ungroup()` gets the dataset back to a single group (the default).
+```{r}
+#| label: ungroup()
+
+daily |> ungroup() |> summarize(flights = n())
+```
+```{r}
+#| label: ungroup()
+
+daily |> ungroup() |> summarize(flights = n(), .by = month)
+```
+### Exercises 3.5.7
+```{r}
+#| label: Exercise 3.5.1
+
+flights |> group_by(carrier) |>
+  summarise(avg_delay = mean(arr_delay, na.rm = TRUE))
+#flights |> group_by(carrier, dest) |>
+#  summarise(avg_delay = mean(arr_delay, na.rm = TRUE))
+```
+```{r}
+#| label: Exercise 3.5.2
+
+flights |>
+  group_by(dest) |> 
+  summarise(delay = max(dep_delay, na.rm = TRUE)) |>
+  arrange(desc(delay))
+```
+```{r}
+#| label: Exercise 3.5.3
+
+library(ggplot2)
+ggplot(flights, aes(x = dep_time, y = dep_delay)) + geom_point(na.rm = TRUE)
+
+```
+```{r}
+#| label: Exercise 3.5.4
+
+flights |> group_by(month) |> slice_min(n=-2)
+
+```
+```{r}
+#| label: Exercise 3.5.6
+
+df <- tibble(
+  x = 1:5,
+  y = c("a", "b", "a", "a", "b"),
+  z = c("K", "K", "L", "L", "K")
+)
+
+df |> group_by(y)
+df |> arrange(y)
+df |> group_by(y) |> summarise(mean_x = mean(x))
+df |> group_by(y, z) |> summarise(mean_x = mean(x))
+df |>
+  group_by(y, z) |>
+  summarize(mean_x = mean(x), .groups = "drop")
+df |>
+  group_by(y, z) |>
+  summarize(mean_x = mean(x))
+df |>
+  group_by(y, z) |>
+  mutate(mean_x = mean(x))
+```
+
+
+
+
+
+
+

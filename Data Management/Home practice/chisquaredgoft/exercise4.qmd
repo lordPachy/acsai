@@ -1,0 +1,102 @@
+---
+title: $\chi^2$ Goodness-of-Fit Test
+subtitle: for Iris Species
+author: Francesco Calzona
+format:
+  beamer:
+    theme: boxes
+    colortheme: crane
+    font: serif
+    header-includes: |
+      \definecolor{supergray}{HTML}{f8f8f8}
+      \setbeamercolor{background canvas}{bg=supergray}
+---
+
+# Math Modeling
+
+## $\chi^2$ distribution
+$$X \sim \chi^2_n$$
+if and only if
+$$X = \sum^n_{i = 1}Z_i^2$$ 
+with $Z_i$ independent and
+$$Z_i \sim \mathcal{N}(0, 1)$$
+
+## $\chi^2_2$ density function
+
+```{r}
+library(ggplot2)
+library(latex2exp)
+
+x = c(0:10)
+y = dchisq(x, 2)
+
+ggplot(data.frame(x, y), aes(x = x, y=y)) + geom_line(color = "blue") + ylab(TeX("P($\ chi^2_2=x$)"))
+```
+
+## $\chi^2_2$ CCDF function
+
+```{r}
+library(ggplot2)
+
+x = c(0:10)
+y = pchisq(x, 2)
+
+ggplot(data.frame(x, y), aes(x = x, y=1-y)) + geom_line(color="red") + ylab(TeX("P($\ chi^2_2>x$)"))
+```
+
+## Approximation to the normal
+Let
+$$X_i \sim Pois(\mathbf{E}[X_i])$$
+If $\mathbf{E}[X_i]$ is big,
+$$ \frac{X_i-\mathbf{E}[X_i]}{\sqrt{\mathbf{E}[X_i]}} = \frac{X_i- \mu}{\sigma} \sim \mathcal{N}(0, 1)$$
+
+## Goodness-of-fit test
+Assuming that our distribution of assumption $H_0$ is true,  
+how likely is it that the population assumes values **equal (or more extreme)** to those of our samples?
+
+## $\chi^2$ Goodness-of-Fit Test {.smaller}
+Let $C_i=$ # counts of type $i$,  $n=$# of types.
+$$H_0: X_i \sim Pois(E[X_i])$$
+for $i \in \{1...n\}$.
+The **test statistic** is
+$$T_s = \sum_{i=1}^n\frac{(C_i - \mathbf{E}[X_i])^2}{\mathbf{E}[X_i]} \sim \chi^2_{n-1}$$
+and
+$$P\text{-}value = \mathbf{P}(\chi^2_{n-1} > T_s)$$
+
+## $\chi^2$ Goodness-of-Fit Test for iris dataset
+Let $C_i=$ # counts of species $i$, $N=$# of total observations
+$$H_0: X_i \sim Pois(\frac{N}{3})$$
+$$T_s = \sum_{i=1}^3\frac{(C_i - \frac{N}{3})^2}{\frac{N}{3}}$$
+$$P\text{-}value = \mathbf{P}(\chi^2_2 > T_s)$$
+
+# R: Calculating the statistic
+
+## Is our hypothesis plausible?
+Let's look into the dataset:
+  
+```{r}
+#| echo: true
+
+data(iris)
+summary(iris$Species)
+```
+## Is our hypothesis plausible?
+```{r}
+#| echo: false
+library(ggplot2)
+ggplot(iris, aes(x = Species,  color = Species, fill = Species)) + geom_bar() + theme_classic()
+```
+## $\chi^2$ Goodness-of-Fit Test in R
+**Be careful about the `table` type!**
+```{r}
+#| echo: true
+chisq.test(table(iris$Species), )
+```
+
+# We cannot reject the hypothesis of equal frequency.
+
+## Source code
+Presentation created with Quarto and Beamer.  
+
+
+
