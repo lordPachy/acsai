@@ -95,8 +95,5 @@ chisq.test(table(iris$Species), )
 
 # We cannot reject the hypothesis of equal frequency.
 
-## Source code
-Presentation created with Quarto and Beamer.  
-
 
 
