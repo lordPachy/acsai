@@ -45,12 +45,75 @@ pet_min = min(iris$Petal.Width)
 pet_max = max(iris$Petal.Width)
 x = seq(pet_min, pet_max, length.out = 150)
 unif_pet = dunif(x, min = pet_min, max = pet_max)
-ggplot(data.frame(x = x, y = unif_pet), aes(x=x, y=y,)) + geom_line()
+ggplot(data.frame(x = x, y = unif_pet), aes(x=x, y=y)) + geom_line() + xlab("Petal Width") + ylab("P(x)")
 ```
 
 Now, we can try to plot them together:
 
 ```{r}
-#data = data.frame(x=rep(1:length(iris$Petal.Width),
-               #    variable=rep(paste0('series', 1:3), each=5))
+ggplot() + geom_density(data = iris, mapping = aes(x = Petal.Width, fill = Species)) + geom_line(data = data.frame(x = x, y = unif_pet), mapping = aes(x = x, y = y), inherit.aes = FALSE, colour = "black") + xlab("width")+ ylab("P(width)") + labs(title = "Probability density function of Iris width vs Uniform Iris width")
 ```
+# Exercise 3
+
+```{r}
+library(stats)
+lambda = 1/mean(iris$Sepal.Length)
+ggplot(data = iris, mapping = aes(x = Sepal.Length, y = dexp(Sepal.Length, rate = lambda))) + geom_line()
+```
+# Exercise 5
+```{r}
+library(dplyr)
+group1 = iris |> filter(Species == "virginica") |> select(Sepal.Width)
+group2 = iris |> filter(Species == "versicolor") |> select(Sepal.Width)
+print(mean(group1$Sepal.Width))
+print(mean(group2$Sepal.Width))
+print(var(group1$Sepal.Width))
+print(var(group2$Sepal.Width))
+t.test(group1, group2)
+```
+# Exercise 6: simulating bivariate Gaussian distribution
+```{r}
+length = iris$Sepal.Length
+width = iris$Sepal.Width
+print(length)
+print(width)
+```
+
+
+```{r}
+#install.packages('mnormt')
+library(mnormt)
+
+set.seed(0)
+x <- seq(min(iris$Sepal.Length), max(iris$Sepal.Length), 0.01)
+y <- seq(min(iris$Sepal.Width), max(iris$Sepal.Width), 0.01)
+data = expand.grid(x=x, y=y)
+mean <- c(mean(iris$Sepal.Length), mean(iris$Sepal.Width))
+cov <- cov(data.frame(iris$Sepal.Length, iris$Sepal.Width))
+f <- function(x1, x2) dmnorm(cbind(x1, x2), mean, cov)
+data = mutate(data, z = f(x, y))
+data
+```
+```{r}
+ggplot() + geom_density_2d(mapping = aes(x=iris$Sepal.Length, y=iris$Sepal.Width), colour = "blue") + geom_contour(data = data, mapping = aes(x = x, y = y, z = z), colour = "red")
+```
+
+```{r}
+#| label: Plotly
+#Create surface plot (plotly solution)
+#install.packages("plotly")
+library(plotly)
+#plot_ly(x=data$x, y=data$y, z=data$z, type="scatter3d", mode="markers", color = I("red"))
+```
+
+
+
+
+
+
+
+
+
+
+
+
