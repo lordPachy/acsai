@@ -4,3 +4,62 @@ format: html
 editor: visual
 ---
 
+# Taking data from DuckDB
+
+```{r}
+library(ggplot2)
+library(dplyr)
+install.packages("duckdb")
+library(duckdb)
+```
+Now, we can call the database function:
+```{r}
+con = dbConnect(duckdb(), dbname="titanic.db")
+
+titanic_data = read.csv("titanic.csv")
+```
+We can now create the table
+```{r}
+dbWriteTable(con, "passengers", titanic_data, row.names=FALSE)
+```
+Let's filter them by age and transform it into a data frame.
+```{r}
+df_adult_passengers=dbGetQuery(con, "SELECT * FROM passengers WHERE age > 18")
+df_adult_passengers = as.data.frame(df_adult_passengers)
+df_adult_passengers
+```
+```{r}
+filtered_data = df_adult_passengers %>% 
+                filter(Survived == 1 & Age > 18)
+filtered_data
+```
+```{r}
+mean_age = filtered_data %>% 
+          group_by(Sex) %>% 
+          summarize(mean_age = mean(Age, na.rm=TRUE))
+mean_age
+```
+
+We can now visualize it with ggplot:
+```{r}
+library(ggplot2)
+age_plot = ggplot(filtered_data, aes(x=Age, group= Sex, fill=Sex)) + 
+          geom_histogram(binwidth = 5, colour="black", position="dodge")+ labs(title = "Age distribution by sex of Surviving Passengers over 18",
+                  x = "Age",
+                  y = "Frequency")
+age_plot
+```
+```{r}
+class_plot = ggplot(titanic_data, aes(x=factor(Pclass), group= factor(Survived), fill=factor(Survived))) + geom_bar(colour="black", position="dodge")+ labs(title = "Age distribution by sex of Surviving Passengers over 18",
+                  x = "Age",
+                  y = "Frequency")
+class_plot
+```
+
+We can stick together the two plots:
+```{r}
+#install.packages("patchwork")
+library(patchwork)
+compound_plt = patchwork::wrap_plots(class_plot, age_plot)
+```
+
