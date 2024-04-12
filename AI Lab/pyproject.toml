@@ -11,6 +11,7 @@ python = "^3.12"
 opencv-contrib-python = "^4.9.0.80"
 matplotlib = "^3.8.3"
 ipykernel = "^6.29.3"
+nltk = "^3.8.1"
 
 
 [build-system]
