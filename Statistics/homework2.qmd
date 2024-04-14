@@ -1,0 +1,50 @@
+---
+title: "Homework 2"
+format: pdf
+editor: visual
+---
+
+# Exercise 8
+```{r}
+library(dplyr)
+dataset = data.frame("mother" = c(135, 127, 124, 120, 115, 112, 104, 96, 94, 85), "daughter" = c(121, 131, 112, 115, 99, 118, 106, 89, 92, 90))
+dataset = tibble(dataset)
+dataset
+```
+
+## Part 1-2
+```{r}
+dataset |> summary()
+```
+```{r}
+sqrt(var(dataset)[2, 2]*length(dataset)/(length(dataset)-1))
+```
+## Part 4
+```{r}
+sum = 0
+for (i in 1:10){
+  sum = sum + (dataset$mother[i] - mean(dataset$mother)) * (dataset$daughter[i]-mean(dataset$daughter))
+}
+ rho = sum/(9 * sqrt(var(dataset))[1, 1] * sqrt(var(dataset))[2,2])
+ rho
+```
+```{r}
+sum = 0
+for (i in 1:10){
+  sum = sum + (dataset$mother[i] - mean(dataset$mother)) * (dataset$daughter[i]-mean(dataset$daughter))
+}
+sum1 = 0
+for (i in 1:10){
+  sum1 = sum1 + ((dataset$mother[i] - mean(dataset$mother)) ^ 2)
+}
+rho * sum / sum1
+```
+## Part 8
+```{r}
+library(ggplot2)
+ggplot(data = dataset, mapping = aes(x = mother, y = daughter)) + geom_point() + geom_smooth(method = "lm")
+```
+```{r}
+lm(daughter~mother, data=dataset)
+```
+
