@@ -1,0 +1,139 @@
+---
+title: "Time series"
+format: html
+editor: visual
+---
+
+```{r}
+# Load required library
+library(data.table)
+
+# Example 1: Creating a data.table
+dt <- data.table(
+  id = c(1, 2, 3, 4, 5),
+  name = c("John", "Jane", "Mike", "Emily", "David"),
+  age = c(25, 32, 28, 36, 41)
+)
+
+# Example 2: Filtering rows based on a condition
+filtered_dt <- dt[age > 30]
+filtered_dt
+```
+```{r}
+# Example 3: Selecting specific columns
+selected_cols <- dt[, .(id, name)]
+selected_cols
+```
+
+
+```{r}
+# Example 4: Sorting data by a column
+sorted_dt <- dt[order(age)]
+sorted_dt
+```
+
+
+```{r}
+# Example 5: Aggregating data and calculating summary statistics
+aggregated_dt <- dt[, .(mean_age = mean(age)), by = name]
+aggregated_dt
+```
+```{r}
+#an example of join
+dt2 = data.table(
+  id = c(2, 4, 5),
+  salary = c(50000, 60000, 70000)
+)
+
+merged_dt = dt[dt2, on = "id"]
+#id is the foreign key to join the two tables
+merged_dt
+```
+```{r}
+#updating variables
+dt[age>30, age:= age + 1]
+dt
+```
+```{r}
+dt[, birth_year:= rep("2001", nrow(dt))]
+dt
+```
+```{r}
+#you need the dot in order to create multiple statements, for example, for the columns
+grouped_dt = dt[, .(mean_age = mean(age), max_age = max(age)), by = name]
+grouped_dt
+```
+```{r}
+#| label: Missing values
+
+dt[is.na(age), age := 0]
+dt[age<30, can_vote := "Yes"]
+dt
+```
+```{r}
+result = dt[age>30][, .(mean_age=mean(age)), by=name]
+result
+```
+```{r}
+result = dt[age<30&can_vote == "Yes", .(mean_age=mean(age)), by = name]
+result
+```
+```{r}
+#| label: Adding entries
+
+v = data.frame("id" = dt[, max(id)], "name" = "john", "age" = 41, "birth_year" = 2050, "can_vote" = "no")
+
+dt = rbind(dt, v)     #this is for uniting the two
+
+dt
+```
+# Working with large dataset
+```{r}
+#| label: Setting up
+
+getwd()
+```
+```{r}
+large_dt = fread("LEZ_4_large_dataset.csv")
+ncol(large_dt)
+```
+```{r}
+colnames(large_dt)
+```
+```{r}
+View(large_dt)
+large_dt[, .N, by = type]
+```
+## Example 12
+```{r}
+#| label: Writing to an external table
+
+fwrite(large_dt, "output.csv")
+```
+
+```{r}
+unique_dt  = unique(large_dt)
+```
+## Example 14
+```{r}
+column_sum = large_dt[, cum_sum := cumsum(alt)]
+column_sum
+```
+## Example 15
+```{r}
+large_dt[, age_category := ifelse(age < 30, "Young", "Adult")]
+large_dt[, is_high := ifelse(alt>2000, "Yes", "No")]
+```
+# Example 16: Sampling
+```{r}
+#| label: Sampling returns indices
+sample_dt = large_dt[sample(.N, 100)]
+sample_dt
+```
+```{r}
+#| label: Sampling with condition
+
+sample_dt = large_dt[large_dt[alt<1000, sample(.N, 100)]]
+sample_dt
+```
+

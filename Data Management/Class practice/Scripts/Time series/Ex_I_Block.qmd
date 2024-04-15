@@ -1,0 +1,238 @@
+# Exercise 1
+Load the data.table package. Furtermore (install and) load the AER package and run the command data("Fertility") which loads the dataset Fertility to your workspace. Turn it into a data.table object.
+
+```{r}
+#install.packages("data.table")
+#install.packages("AER")
+library(data.table)
+data("Fertility")
+```
+```{r}
+dt = setDT(Fertility)
+View(dt)
+```
+
+
+# Exercise 2
+Select rows 35 to 50 and print to console its age and work entry.
+```{r}
+dt[35:50][, .(age, work)]
+```
+
+
+#Exercise 3
+Select the last row in the dataset and print to console.
+```{r}
+dt[length(dt)]
+```
+
+
+Exercise 4
+Count how many women proceeded to have a third child.
+```{r}
+dt[morekids=="yes", .N]
+```
+
+
+Exercise 5
+There are four possible gender combinations for the first two children. Which is the most common? Use the by argument.
+```{r}
+dt[, .N, by = .(gender1, gender2)]
+```
+Exercise 6
+By racial composition what is the proportion of woman working four weeks or less in 1979?
+```{r}
+dt[]
+```
+
+  
+Exercise 7
+Use %between% to get a subset of woman between the age of 22 and 24 and calculate the proportion who had a boy as their firstborn.
+
+Exercise 8
+Add a new column, age squared, to the dataset.
+
+Exercise 9
+Out of all the racial composition in the dataset which had the lowest proportion of boys for their firstborn. With the same command display the number of observation in each category as well.
+
+Exercise 10
+Calculate the proportion of women who have a third child by gender combination of the first two children?
+  
+  
+
+####################
+
+#                  #
+
+#    Exercise 1    #
+
+#                  #
+
+####################
+
+# Load the data.table package
+
+library(data.table) 
+# First install.packages("data.table")
+
+library(AER)        
+# First install.packages("AER")
+
+data("Fertility")
+setDT(Fertility)
+
+
+####################
+
+#                  #
+
+#    Exercise 2    #
+
+#                  #
+
+####################
+#Select rows 35 to 50 and print to console its age and work entry.
+
+Fertility[35:50, .(age, work)]
+##     age work
+##  1:  28   20
+##  2:  33   12
+##  3:  32    0
+##  4:  26   52
+##  5:  32   52
+##  6:  28    0
+##  7:  32   40
+##  8:  35    0
+##  9:  33    0
+## 10:  32   42
+## 11:  29    0
+## 12:  29   52
+## 13:  31    0
+## 14:  30   51
+## 15:  28    0
+## 16:  29    0
+####################
+
+#                  #
+
+#    Exercise 3    #
+
+#                  #
+
+####################
+#Select the last row in the dataset and print to console.
+
+Fertility[.N]
+##    morekids gender1 gender2 age afam hispanic other work
+## 1:      yes  female  female  35   no       no    no    0
+####################
+
+#                  #
+
+#    Exercise 4    #
+
+#                  #
+
+####################
+#Count how many women proceeded to have a third child.
+
+Fertility[morekids == "yes", .N]
+## [1] 96912
+####################
+
+#                  #
+
+#    Exercise 5    #
+
+#                  #
+
+####################
+#There are four possible gender combinations for the first two children. Which is the most common? Use the by argument.
+
+Fertility[, .N, by = .(gender1, gender2)]
+##    gender1 gender2     N
+## 1:    male  female 63185
+## 2:  female    male 62724
+## 3:  female  female 60946
+## 4:    male    male 67799
+####################
+
+#                  #
+
+#    Exercise 6    #
+
+#                  #
+
+####################
+#By racial composition what is the proportion of woman working four weeks or less in 1979?
+Fertility[, mean(work <= 4), by = .(afam, hispanic, other)]
+##    afam hispanic other        V1
+## 1:   no       no    no 0.5088019
+## 2:  yes       no    no 0.3030864
+## 3:   no       no   yes 0.4696925
+## 4:   no      yes    no 0.5242422
+## 5:  yes      yes    no 0.4540816
+## 6:   no      yes   yes 0.5060654
+####################
+
+#                  #
+
+#    Exercise 7    #
+
+#                  #
+
+####################
+#Use %between% to get a subset of woman between the age of 22 and 24 and calculate the proportion who had a boy as their firstborn.
+
+Fertility[age %between% c(22, 24), mean(gender1 == "male")]
+## [1] 0.5036608
+####################
+
+#                  #
+
+#    Exercise 8    #
+
+#                  #
+
+####################
+#Add a new column, age squared, to the dataset.
+Fertility[, age_sq := age^2]
+
+
+####################
+
+#                  #
+
+#    Exercise 9    #
+
+#                  #
+
+####################
+#Out of all the racial composition in the dataset which had the lowest proportion of boys for their firstborn. 
+#With the same command display the number of observation in each category as well.
+
+Fertility[, .(.N, prop_m = mean(gender1 == "male")),
+          by = .(afam, hispanic, other)]
+##    afam hispanic other      N    prop_m
+## 1:   no       no    no 216033 0.5146436
+## 2:  yes       no    no  12960 0.5089506
+## 3:   no       no   yes   6764 0.5198108
+## 4:   no      yes    no  11117 0.5119187
+## 5:  yes      yes    no    196 0.5612245
+## 6:   no      yes   yes   7584 0.5130538
+####################
+
+#                  #
+
+#    Exercise 10   #
+
+#                  #
+
+####################
+#Calculate the proportion of women who have a third child by gender combination of the first two children?
+Fertility[, mean(morekids == "yes"), by = .(gender1, gender2)]
+##    gender1 gender2        V1
+## 1:    male  female 0.3463005
+## 2:  female    male 0.3465500
+## 3:  female  female 0.4247859
+## 4:    male    male 0.4042095
