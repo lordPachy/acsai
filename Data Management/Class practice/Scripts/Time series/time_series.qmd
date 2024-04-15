@@ -3,6 +3,10 @@ title: "Time series"
 format: html
 editor: visual
 ---
+```{r}
+install.packages("styler")
+```
+
 
 ```{r}
 # Load required library
@@ -157,3 +161,5 @@ sample_dt
 sample_dt = large_dt[large_dt[alt<1000, sample(.N, 100)]]
 sample_dt
 ```
+
+
