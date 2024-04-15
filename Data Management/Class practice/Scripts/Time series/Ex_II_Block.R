@@ -15,7 +15,7 @@ library(data.table)
 
 # Load data with fread
 getwd()
-dir = "/Users/walter/Desktop/DATA/"
+dir = "/home/pachy/Desktop/ACSAI/acsai/Data Management/Class practice/Scripts/Time series"
 setwd(dir)
 tc <- fread("toy_cor.csv")
 
@@ -30,6 +30,12 @@ head(tc)
 
 ####################
 #Using one line of code print out the most common car model in the data, and the number of times it appears.
+tc[Model == max(Model), .N]
+
+
+
+
+
 tc[, .N, by = Model][order(N)][.N]
 ##                                   Model   N
 ## 1: 1.6 16V HATCHB LINEA TERRA 2/3-Doors 109
@@ -48,6 +54,7 @@ tc[, .N, by = Model][which.max(N)]
 
 ####################
 #Print out the mean and median price of the 10 most common models.
+tc[, .(.N, meanprice = mean(Price), medianprice = median(Price)), by = .(Model)][order(N)][.N-10:.N]
 
 tc[, .(.N, medianPrice = median(Price), meanPrice = mean(Price)),
    by = Model][order(-N)][1:10]
@@ -73,6 +80,7 @@ tc[, .(.N, medianPrice = median(Price), meanPrice = mean(Price)),
 ####################
 #Delete all columns that have Guarantee in its name.
 
+
 tc[, grep("Guarantee", names(tc)) := NULL]
 
 
@@ -87,8 +95,15 @@ tc[, grep("Guarantee", names(tc)) := NULL]
 ####################
 #Add a new column which is the squared deviation of price from the average price of cars the same color.
 
-tc[, sq_dev_bycol := (Price - mean(Price))^2,  by = Color]
+tc[, .(deviation := (Price - mean()))]
 
+
+
+
+
+
+tc[, sq_dev_bycol := (Price - mean(Price))^2,  by = Color]
+tc
 
 ####################
 
@@ -99,7 +114,7 @@ tc[, sq_dev_bycol := (Price - mean(Price))^2,  by = Color]
 #                  #
 
 ####################
-#Use a combintation of .SDcols and lapply to get the mean value of columns 18 through 35
+#Use a combination of .SDcols and lapply to get the mean value of columns 18 through 35
 
 tc[, lapply(.SD, mean), .SDcols = 18:35]
 ##          ABS  Airbag_1  Airbag_2     Airco Automatic_airco Boardcomputer
@@ -120,6 +135,8 @@ tc[, lapply(.SD, mean), .SDcols = 18:35]
 
 ####################
 #Print the most common color by age in years?
+
+tc[, .(most_common = max(Color)), by = .(Age_08_04, Mfg_Year)]
 
 tc[, .N,
    by = .(floor(Age_08_04/12), Color)][order(floor, N),
@@ -143,6 +160,10 @@ tc[, .N,
 
 ####################
 #For the dummy variables in columns 18:35 recode 0 to -1. You might want to use the set function here
+
+tc[18:35][]
+
+
 for (j in 18:35) {
   set(tc,
       i = tc[, which(.SD == 0), .SDcols = j],
@@ -161,6 +182,11 @@ for (j in 18:35) {
 
 ####################
 #Use the set function to add “yuck!” to the varible Fuel_Type if it is not petrol. Just because…
+
+
+
+
+
 set(tc,
     i =  tc[, which(Fuel_Type == "Petrol")],
     j = "Fuel_Type",

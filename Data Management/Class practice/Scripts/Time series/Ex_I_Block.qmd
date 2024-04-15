@@ -2,15 +2,17 @@
 Load the data.table package. Furtermore (install and) load the AER package and run the command data("Fertility") which loads the dataset Fertility to your workspace. Turn it into a data.table object.
 
 ```{r}
-#install.packages("data.table")
+install.packages("data.table")
 #install.packages("AER")
 library(data.table)
+library(AER)
 data("Fertility")
 ```
 ```{r}
 dt = setDT(Fertility)
 View(dt)
 ```
+
 
 
 # Exercise 2
@@ -27,38 +29,56 @@ dt[length(dt)]
 ```
 
 
-Exercise 4
+# Exercise 4
 Count how many women proceeded to have a third child.
 ```{r}
 dt[morekids=="yes", .N]
 ```
 
 
-Exercise 5
+# Exercise 5
 There are four possible gender combinations for the first two children. Which is the most common? Use the by argument.
 ```{r}
 dt[, .N, by = .(gender1, gender2)]
+length(dt)
 ```
-Exercise 6
+# Exercise 6
 By racial composition what is the proportion of woman working four weeks or less in 1979?
 ```{r}
-dt[]
+dt[work <= 4, .(proportion = .N/nrow(dt) * 100), by = .(afam, hispanic, other)]
 ```
 
   
-Exercise 7
+# Exercise 7
 Use %between% to get a subset of woman between the age of 22 and 24 and calculate the proportion who had a boy as their firstborn.
+```{r}
+dt[age %between% c(22, 24), .(proportion = .N/nrow(dt[age %between% c(22, 24)])),by = gender1]
+```
 
-Exercise 8
+
+# Exercise 8
 Add a new column, age squared, to the dataset.
+```{r}
+dt[, age_squared := age ^ 2]
+dt
+```
 
-Exercise 9
-Out of all the racial composition in the dataset which had the lowest proportion of boys for their firstborn. With the same command display the number of observation in each category as well.
+
+# Exercise 9
+Show, out of all the racial composition in the dataset which had the lowest proportion of boys for their firstborn. With the same command display the number of observation in each category as well.
+```{r}
+dt[, .(.N, prop = mean(gender1=="male")), by = .(afam, hispanic, other)]
+```
+
 
 Exercise 10
 Calculate the proportion of women who have a third child by gender combination of the first two children?
   
-  
+```{r}
+dt[, .(prop = mean(morekids == "yes")), by = .(gender1, gender2)]
+dt
+```
+
 
 ####################
 
