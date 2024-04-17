@@ -2,7 +2,7 @@
 Load the data.table package. Furtermore (install and) load the AER package and run the command data("Fertility") which loads the dataset Fertility to your workspace. Turn it into a data.table object.
 
 ```{r}
-install.packages("data.table")
+#install.packages("data.table")
 #install.packages("AER")
 library(data.table)
 library(AER)
@@ -67,7 +67,7 @@ dt
 # Exercise 9
 Show, out of all the racial composition in the dataset which had the lowest proportion of boys for their firstborn. With the same command display the number of observation in each category as well.
 ```{r}
-dt[, .(.N, prop = mean(gender1=="male")), by = .(afam, hispanic, other)]
+dt[, .(.N, prop = mean(gender1=="male")), by = .(afam, hispanic, other)][which.min(prop)]
 ```
 
 

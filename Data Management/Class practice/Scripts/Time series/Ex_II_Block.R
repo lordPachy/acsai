@@ -17,7 +17,7 @@ library(data.table)
 getwd()
 dir = "/home/pachy/Desktop/ACSAI/acsai/Data Management/Class practice/Scripts/Time series"
 setwd(dir)
-tc <- fread("toy_cor.csv")
+tc <- fread("toy_cor.csv", fill=T)    #it is already in the data table class
 
 head(tc)
 ####################
@@ -116,7 +116,7 @@ tc
 ####################
 #Use a combination of .SDcols and lapply to get the mean value of columns 18 through 35
 
-tc[, lapply(.SD, mean), .SDcols = 18:35]
+tc[, lapply(.SD, mean), .SDcols = 18:35]  #.SD returns the column specified by .SDcols = 18:35
 ##          ABS  Airbag_1  Airbag_2     Airco Automatic_airco Boardcomputer
 ## 1: 0.8133705 0.9707521 0.7228412 0.5083565      0.05640669     0.2945682
 ##    CD_Player Central_Lock Powered_Windows Power_Steering     Radio

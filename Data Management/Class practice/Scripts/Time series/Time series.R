@@ -1,0 +1,317 @@
+install.packages("astsa")
+install.packages(("xts"))
+library(astsa)
+
+# This is a time series
+plot(jj, type="o", ylab="Quarterly Earnings per Share")
+plot(speech)
+
+
+library(xts)
+djiar = diff(log(djia$Close))[-1] # approximate returns
+plot(djiar, main="DJIA Returns", type="n")
+lines(djiar)
+
+par(mfrow = c(2,1)) # set up the graphics
+plot(soi, ylab="", xlab="", main="Southern Oscillation Index")
+plot(rec, ylab="", xlab="", main="Recruitment")
+
+par(mfrow=c(2,1))
+plot(EQ5, main="Earthquake")
+plot(EXP6, main="Explosion")
+
+
+library(data.table)
+library(lubridate)
+
+revenues <- fread("revenues.csv")
+
+setDT(revenues)
+
+# 1 - Time classes
+
+# Datetime format
+
+class(revenues$registered_at)
+
+head(revenues$registered_at)
+
+# Let's create a Date variable
+
+revenues <- revenues[, Day := as.Date(registered_at)]
+
+class(revenues$Day)
+
+head(revenues$Day)
+
+# Let's see how to extract specific time units
+
+# This is our datetime
+revenues$registered_at[1]
+
+# If you want to extract the Year
+year(revenues$registered_at[1])
+
+# Month
+month(revenues$registered_at[1])
+
+# Day
+day(revenues$registered_at[1])
+
+# Hour:
+hour(revenues$registered_at[1])
+
+# Minutes
+minute(revenues$registered_at[1])
+
+# Seconds
+second(revenues$registered_at[1])
+
+
+
+############# 1) TIME DIFFERENCES 
+
+# Dealing with time differences can be a little tricky 
+# let's see how to do it
+
+revenues$registered_at[1] - revenues$registered_at[2]
+
+# If we subtract two datetime values we obtain a "Time difference of X days"
+
+revenues$registered_at[3498] - revenues$registered_at[990]
+
+# If the datetimes are closer than one day, 
+#we obtain a time difference of X hours, minutes or seconds
+
+class(revenues$registered_at[3498] - revenues$registered_at[990])
+
+# Let's try
+# I want to compute the time difference of my observations from the minimum
+# observed date
+
+min_obs_date <- revenues[,min(registered_at)]
+
+# Create the variable
+
+revenues <- revenues[, Time_diff := registered_at-min_obs_date]
+
+head(revenues$Time_diff)
+
+# Our differences have been automatically converted to seconds
+
+# But I want only the number of days
+revenues <- revenues[, Time_diff := as.period(registered_at-min_obs_date, "days")]
+head(revenues$Time_diff)
+
+# Now let's extract the day
+revenues <- revenues[, Time_diff := day(Time_diff)]
+head(revenues$Time_diff)
+
+class(revenues$Time_diff)
+# Our variable is now numeric, 
+#and we don't have to deal with time classes anymore :)
+
+
+
+
+############ 2) AGGREGATE
+
+# Let's look at our time-series
+
+library(ggplot2)
+
+ggplot(revenues, aes(x=registered_at))+
+  geom_line(aes(y=Total_Revenue))+
+  theme_bw()
+
+# It is a little bit difficult to visualize in its current form
+
+
+# Let's see how to aggregate rows based on their time
+
+# I want to compute the daily sum of Total Revenues
+
+# The most simple way to do it is to create a Day variable 
+# and aggregate the Total_Revenues using data.table
+
+# We already did the first step as:
+revenues <- revenues[, Day := as.Date(registered_at)]
+
+# Now we just have to sum the Total_Revenues
+
+daily_revenues <- revenues[, sum(Total_Revenue), by=Day]
+
+# Rename the sum column and visualize 
+names(daily_revenues)[2] <- "Total_Revenue"
+
+ggplot(daily_revenues, aes(x=Day))+
+  geom_line(aes(y=Total_Revenue))+
+  theme_bw()
+
+# It is a little bit cleaner now, but not enough
+
+# Let's try to calculate the Monthly sum
+
+# We are going to create a vector of Months and use it to bin the dates
+
+revenues[,min(Day)]
+
+revenues[,max(Day)]
+
+# Now we know that our vector has to start in 2011-01-01 and to end in 
+# 2017-01-01 
+
+# We can create a date with the function make_date
+make_date(year=2011, month =1, day=1)
+
+# And create a sequence using the make_date function
+
+obs_months <- seq(from = make_date(year=2011, month =1, day=1), 
+                  to=make_date(year=2017, month =1, day=1),
+                  by="1 month")
+
+obs_months
+
+# Let's bin our dates using obs_months
+
+revenues <- revenues[, Month_bin := cut(x=Day, breaks=obs_months, 
+                                        include.lowest=TRUE)]
+
+# And repeat the sum by Month_bin
+
+monthly_revenues <- revenues[, sum(Total_Revenue), by=Month_bin]
+
+# Rename the sum column and visualize 
+names(monthly_revenues)[2] <- "Total_Revenue"
+
+# The last thing to do is to convert our Month_bin variable to Date, since it is
+# a character variable
+
+monthly_revenues <- monthly_revenues[, Month_bin:= as.Date(Month_bin)]
+
+ggplot(monthly_revenues, aes(x=Month_bin))+
+  geom_line(aes(y=Total_Revenue))+
+  theme_bw()
+
+# It is definitely clearer now, let's make the plot better
+
+ggplot(monthly_revenues, aes(x=Month_bin))+
+  geom_line(aes(y=Total_Revenue), lwd=1)+
+  xlab("Month")+
+  ylab("Total Revenue")+
+  ggtitle("Monthly Total Revenues")+
+  theme_bw()+
+  theme(plot.title = element_text(size=18, hjust=0.5, face="bold"),
+        plot.subtitle = element_text(size=15, hjust=0.5, face="italic"),
+        axis.title = element_text(size=16, face="italic"),
+        axis.text = element_text(size=14), 
+        panel.background = element_blank(), 
+        panel.grid = element_line(color="lightgrey"), 
+        axis.ticks.length = unit(0.2, 'cm'))
+
+
+########### 3 - Moving Average
+
+# We can smooth the time series by computing the Moving Average of its values
+
+# Given a window width, the moving average is the average of the values in that window
+
+library(zoo)
+
+monthly_revenues <- monthly_revenues[order(Month_bin),]
+
+monthly_revenues <- monthly_revenues[, Mov_Avg_3 := rollmean(monthly_revenues$Total_Revenue, k=3, fill=NA, align = "center")]
+# k is the width of the rolling window
+
+ggplot(monthly_revenues, aes(x=Month_bin))+
+  geom_line(aes(y=Mov_Avg_3), lwd=1)+
+  ylab("Moving Avg (Total Revenues)")+
+  ggtitle("Moving Average of Monthly Total Revenues", subtitle = "Window width = 3")+
+  theme_bw()+
+  theme(plot.title = element_text(size=18, hjust=0.5, face="bold"),
+        plot.subtitle = element_text(size=15, hjust=0.5, face="italic"),
+        axis.title = element_text(size=16, face="italic"),
+        axis.text = element_text(size=14), 
+        panel.background = element_blank(), 
+        panel.grid = element_line(color="lightgrey"), 
+        axis.ticks.length = unit(0.2, 'cm'))
+
+# Let's try with a broader window: 5
+
+monthly_revenues <- monthly_revenues[, Mov_Avg_5 := rollmean(monthly_revenues$Total_Revenue, k=5, fill=NA, align = "center")]
+# k is the width of the rolling window
+
+ggplot(monthly_revenues, aes(x=Month_bin))+
+  geom_line(aes(y=Mov_Avg_5), lwd=1)+
+  ylab("Rolling Avg (Total Revenues)")+
+  ggtitle("Rolling Average of Monthly Total Revenues", subtitle = "Window width = 5")+
+  theme_bw()+
+  theme(plot.title = element_text(size=18, hjust=0.5, face="bold"),
+        plot.subtitle = element_text(size=15, hjust=0.5, face="italic"),
+        axis.title = element_text(size=16, face="italic"),
+        axis.text = element_text(size=14), 
+        panel.background = element_blank(), 
+        panel.grid = element_line(color="lightgrey"), 
+        axis.ticks.length = unit(0.2, 'cm'))
+
+# We can also compute the rolling median, sum, and maximum
+
+# Median
+monthly_revenues <- monthly_revenues[, Mov_Med_3 := rollmedian(monthly_revenues$Total_Revenue, k=3, fill=NA, align = "center")]
+
+ggplot(monthly_revenues, aes(x=Month_bin))+
+  geom_line(aes(y=Mov_Med_3), lwd=1)+
+  ylab("Rolling Median (Total Revenues)")+
+  ggtitle("Rolling Median of Monthly Total Revenues", subtitle = "Window width = 3")+
+  theme_bw()+
+  theme(plot.title = element_text(size=18, hjust=0.5, face="bold"),
+        plot.subtitle = element_text(size=15, hjust=0.5, face="italic"),
+        axis.title = element_text(size=16, face="italic"),
+        axis.text = element_text(size=14), 
+        panel.background = element_blank(), 
+        panel.grid = element_line(color="lightgrey"), 
+        axis.ticks.length = unit(0.2, 'cm'))
+
+# Sum
+
+monthly_revenues <- monthly_revenues[, Mov_Sum_3 := rollsum(monthly_revenues$Total_Revenue, k=3, fill=NA, align = "center")]
+
+ggplot(monthly_revenues, aes(x=Month_bin))+
+  geom_line(aes(y=Mov_Sum_3), lwd=1)+
+  ylab("Rolling Sum (Total Revenues)")+
+  ggtitle("Rolling Sum of Monthly Total Revenues", subtitle = "Window width = 3")+
+  theme_bw()+
+  theme(plot.title = element_text(size=18, hjust=0.5, face="bold"),
+        plot.subtitle = element_text(size=15, hjust=0.5, face="italic"),
+        axis.title = element_text(size=16, face="italic"),
+        axis.text = element_text(size=14), 
+        panel.background = element_blank(), 
+        panel.grid = element_line(color="lightgrey"), 
+        axis.ticks.length = unit(0.2, 'cm'))
+
+# Maximum
+
+monthly_revenues <- monthly_revenues[, Mov_Max_3 := rollmax(monthly_revenues$Total_Revenue, k=3, fill=NA, align = "center")]
+
+ggplot(monthly_revenues, aes(x=Month_bin))+
+  geom_line(aes(y=Mov_Max_3), lwd=1)+
+  ylab("Rolling Max (Total Revenues)")+
+  xlab("Month")+
+  ggtitle("Rolling Max of Monthly Total Revenues", subtitle = "Window width = 3")+
+  theme_bw()+  
+  theme(plot.title = element_text(size=18, hjust=0.5, face="bold"),
+        plot.subtitle = element_text(size=15, hjust=0.5, face="italic"),
+        axis.title = element_text(size=16, face="italic"),
+        axis.text = element_text(size=14), 
+        panel.background = element_blank(), 
+        panel.grid = element_line(color="lightgrey"), 
+        axis.ticks.length = unit(0.2, 'cm'))
+
+
+
+
+####### Exercices
+
+# Repeat Daily and Monthly aggregation, and their rolling average, median and sum for:
+# 1) Sold Products
+# 2) Revenue per Sold Products (Create a variable as Total Revenue/Sold Products)
