@@ -37,7 +37,9 @@ revenues <- fread("revenues.csv")
 
 setDT(revenues)
 ```
+
 # Time classes
+
 ```{r}
 # Datetime format
 
@@ -154,8 +156,7 @@ ggplot(daily_revenues, aes(x=Day))+
   theme_bw()
 ```
 
-It is a little bit cleaner now, but not enough;
-Let's try to calculate the Monthly sum. We are going to create a vector of Months and use it to bin the dates.
+It is a little bit cleaner now, but not enough; Let's try to calculate the Monthly sum. We are going to create a vector of Months and use it to bin the dates.
 
 ```{R}
 revenues[,min(Day)]
@@ -327,12 +328,12 @@ ggplot(monthly_revenues, aes(x=Month_bin))+
 ## Sold products
 
 **Repeat Daily and Monthly aggregation, and their rolling average, median and sum for sold products.** 2. Revenue per Sold Products (Create a variable as Total Revenue/Sold Products)
+
 ```{r}
 #| label: Dataset exploration
 
 head(revenues)
 ```
-
 
 ```{r}
 #| label: Daily aggregation
@@ -350,6 +351,7 @@ ggplot(daily_sold_products, aes(x=Day))+
   geom_line(aes(y=Sold_Products))+
   theme_bw()
 ```
+
 ```{R}
 #| label: Monthly aggregation
 
@@ -394,6 +396,7 @@ ggplot(monthly_sold_products, aes(x=Month_bin))+
   geom_line(aes(y=Sold_Products))+
   theme_bw()
 ```
+
 ```{R}
 #| label: Rolling average
 
@@ -461,6 +464,7 @@ ggplot(monthly_sold_products, aes(x=Month_bin))+
 ## Revenue per sold products
 
 **Repeat Daily and Monthly aggregation, and their rolling average, median and sum for revenue per sold products (Create a variable as Total Revenue/Sold Products).**
+
 ```{r}
 #| label: Variable creation
 
@@ -521,6 +525,7 @@ ggplot(monthly_RPSP, aes(x=Month_bin))+
   geom_line(aes(y=Revenue_Per_Sold_Product))+
   theme_bw()
 ```
+
 ```{R}
 #| label: Rolling average
 

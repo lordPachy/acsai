@@ -1,0 +1,19 @@
+---
+title: "clustering"
+format: html
+editor: visual
+---
+
+# Importing data
+```{r}
+seg.raw <- read.csv("http://goo.gl/qw303p")
+head(seg.raw)
+```
+#Looking at the income distribution
+```{r}
+plot(density(seg.raw$income))
+```
+```{r}
+dist(rbind(c(1, 2, 3), c(2, 3, 2)))
+```
+
