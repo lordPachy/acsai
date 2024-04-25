@@ -1,0 +1,150 @@
+---
+title: "sentiment_analysis"
+format: html
+editor: visual
+---
+
+# Importing stuff
+Libraries:
+```{r}
+install.packages("tm")
+install.packages("SnowballC")
+library(tm)
+library(SnowballC)
+```
+
+Let's see if everything is alright:
+```{r}
+load("posts_disneypixar.rdata")
+str(posts)
+```
+## Taking all the messages
+It can be noted that, in raw data, there is a problem with ASCII encoding. It can be solved by changing the encoding.\
+However, trying to translate from emojis to ASCII may fail, and thus we have N/A.
+```{r}
+texts = posts$message
+texts = iconv(texts, 'UTF-8', 'ASCII')
+head(texts,  n = 60)
+```
+# Inspecting the dataset
+We can now create a collection of documents.
+```{r}
+corpus = Corpus(VectorSource(texts))
+corpus
+```
+Let's peek inside a certain a page of the document.
+```{r}
+inspect(corpus[561])
+```
+Not all posts have text within them, so the page may be empty.
+```{r}
+writeLines(as.character(corpus[560]))
+```
+# Text cleaning
+
+This includes things like deleting stopwords and *stemming*, which means removing roots from a word.
+```{r}
+getTransformations()
+toSpace = content_transformer(function(x, pattern) {return (gsub(pattern, " ", x))})
+```
+Let's eliminate all colons and hypens:
+```{r}
+corpus = tm_map(corpus, toSpace, "-")
+corpus = tm_map(corpus, toSpace, ":")
+```
+And now we can convert to lowercase, and remove numbers:
+```{r}
+corpus <- tm_map(corpus, content_transformer(tolower))
+writeLines(as.character(corpus[[560]]))
+```
+```{r}
+corpus <- tm_map(corpus, removeNumbers)
+writeLines(as.character(corpus[[560]]))
+```
+Now we can remove stopwords:
+```{r}
+corpus <- tm_map(corpus, removeWords, stopwords("english"))
+writeLines(as.character(corpus[[560]]))
+```
+...punctuation...
+```{r}
+corpus <- tm_map(corpus, removePunctuation)
+writeLines(as.character(corpus[[560]]))
+```
+```{r}
+corpus <- tm_map(corpus, stripWhitespace)
+writeLines(as.character(corpus[[560]]))
+```
+# Creating a document term matrix
+```{r}
+dtm = DocumentTermMatrix(corpus)
+```
+Let's create a histogram of the word frequency:
+```{r}
+freq = colSums(as.matrix(dtm))
+freq[46:49]
+```
+```{r}
+ord = order(freq, decreasing = TRUE)
+```
+```{r}
+freq[head(ord)]
+```
+
+```{r}
+findFreqTerms(dtm, lowfreq = 10)
+```
+# Frequency histogram
+```{r}
+wf = data.frame(word = names(freq), freq=freq)
+head(wf)
+```
+```{r}
+plot(density(wf$freq))
+```
+```{r}
+library(ggplot2)
+ggplot(subset(wf, freq>10), aes(x = reorder(word, -freq), y = freq)) +
+  geom_bar(stat = "identity") + 
+  labs(x = "", y = "frequency") +
+  theme(axis.text.x=element_text(angle=45, hjust=1))
+```
+# Sentiment analysis
+```{r}
+#install.packages('syuzhet')
+library('syuzhet')
+sentiment = get_nrc_sentiment(texts)
+
+td = data.frame(t(sentiment))
+td[, 1:5]
+```
+```{r}
+td = data.frame(rowSums(td[-1]))
+td
+```
+```{r}
+names(td)[1] <- "count"
+td
+```
+```{r}
+tdw <- cbind("sentiment" = rownames(td), td)
+tdw
+
+```
+```{r}
+rownames(tdw) <- NULL
+tdw
+```
+```{r}
+td_em  = tdw[1:8, ] # emotions
+td_pol = tdw[9:10, ] # polarity
+```
+
+```{r}
+require("ggplot2")
+ggplot(td_em, aes(x = sentiment, y = count, fill = sentiment)) +
+  geom_bar(stat = "identity") +
+  labs(x = "emotion") +
+  theme(axis.text.x=element_text(angle=45, hjust=1), legend.title = element_blank())
+```
+
