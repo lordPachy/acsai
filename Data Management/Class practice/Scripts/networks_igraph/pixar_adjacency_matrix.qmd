@@ -1,0 +1,31 @@
+---
+title: "bipartite_pixar"
+format: html
+editor: visual
+---
+
+# Importing the dataset and libraries
+```{r}
+library(igraph)
+setwd('/home/pachy/Desktop/ACSAI/acsai/Data Management/Class practice/Scripts/networks_igraph')
+load("comments_disneypixar.rdata")
+```
+
+Quick check:
+```{r}
+head(comments)
+```
+
+
+# Creating the network
+```{r}
+edges = data.frame("from" = comments$from_id, "to" = comments$post_id, stringsAsFactors = F)
+g = graph_from_data_frame(edges, directed = F)
+g
+```
+
+
+```{r}
+net <- simplify(net, remove.multiple = F, remove.loops = T) 
+```
+
