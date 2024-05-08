@@ -1,0 +1,45 @@
+---
+title: "clustering"
+format: html
+editor: visual
+---
+
+# Imports
+
+## Libraries
+
+```{r}
+library(data.table)
+```
+
+
+## Importing data
+
+```{r}
+getwd()
+seg.raw <- read.csv('data/archive/sales.csv')
+seg = as.data.table(seg.raw)
+View(seg)
+is.data.table(seg)
+```
+
+# Introductory clustering
+
+Let's cluster the sales basing on the year:
+
+```{r}
+mode(seg$date)
+colnames(seg)
+seg_year = seg[, .(mean(views), mean(price_cost), mean(price_retail)), by=substr(date, 1, 4)]
+head(seg_year)
+```
+
+```{r}
+seg.summ = function(data, groups){
+  aggregate(data, list(groups), function(x){
+    mean(as.numeric(x))
+  })
+}
+seg.summ(seg.raw, seg.raw$date[1:4])
+```
+
