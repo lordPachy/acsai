@@ -30,16 +30,28 @@ Let's cluster the sales basing on the year:
 ```{r}
 mode(seg$date)
 colnames(seg)
-seg_year = seg[, .(mean(views), mean(price_cost), mean(price_retail)), by=substr(date, 1, 4)]
+seg_year = seg[, .(mean_sales = mean(sales), mean_views = mean(views), mean_price_cost = mean(price_cost), mean_price_retail = mean(price_retail)), by = substr(date, 1, 4)]
 head(seg_year)
 ```
 
+## Distance metrics
+
+Euclidean distance:
+
 ```{r}
-seg.summ = function(data, groups){
-  aggregate(data, list(groups), function(x){
-    mean(as.numeric(x))
-  })
-}
-seg.summ(seg.raw, seg.raw$date[1:4])
+#install.packages('dplyr')
+library(dplyr)
+dist(seg_year)
+cluster::daisy(seg_year[, .SD, .SDcols = is.numeric], metric = 'gower')
 ```
+
+
+```{r}
+#install.packages('cluster')
+library(cluster)
+seg_dist = cluster::daisy(seg[2, 5])
+seg_dist
+as.matrix(seg_dist)
+```
+
 
