@@ -12,7 +12,6 @@ editor: visual
 library(data.table)
 ```
 
-
 ## Importing data
 
 ```{r}
@@ -25,13 +24,13 @@ is.data.table(seg)
 
 # Introductory clustering
 
-Let's cluster the sales basing on the year:
+Let's cluster the sales basing on the month:
 
 ```{r}
 mode(seg$date)
 colnames(seg)
-seg_year = seg[, .(mean_sales = mean(sales), mean_views = mean(views), mean_price_cost = mean(price_cost), mean_price_retail = mean(price_retail)), by = substr(date, 1, 4)]
-head(seg_year)
+seg_month = seg[, .(mean_sales = mean(sales), mean_views = mean(views), mean_price_cost = mean(price_cost), mean_price_retail = mean(price_retail)), by = substr(date, 1, 7)]
+head(seg_month)
 ```
 
 ## Distance metrics
@@ -41,17 +40,93 @@ Euclidean distance:
 ```{r}
 #install.packages('dplyr')
 library(dplyr)
-dist(seg_year)
-cluster::daisy(seg_year[, .SD, .SDcols = is.numeric], metric = 'gower')
+seg_dist = dist(seg_month)
+as.matrix(seg_dist)
 ```
 
+Using Daisy method:
 
 ```{r}
 #install.packages('cluster')
 library(cluster)
-seg_dist = cluster::daisy(seg[2, 5])
-seg_dist
+seg_dist_daisy = cluster::daisy(seg_month[, .SD, .SDcols = is.numeric])
 as.matrix(seg_dist)
+```
+## Hierarchical Clustering
+
+```{r}
+seg_month_hc = hclust(seg_dist_daisy, method = 'complete')
+plot(seg_month_hc)
+```
+Let's cut this tree:
+```{r}
+plot(cut(as.dendrogram(seg_month_hc), h = 1000)$lower[[1]])
+```
+Let's see how well the dendrogram represents the distance matrix, through the **cophenetic distance**:
+```{r}
+cor(cophenetic(seg_month_hc), seg_dist_daisy)
+```
+
+Let's cut the tree:
+
+```{r}
+plot(seg_month_hc)
+rect.hclust(seg_month_hc, k = 3)
+```
+```{r}
+seg_month_hc_segment = cutree(seg_month_hc, k = 4)  #membership vector
+table(seg_month_hc_segment)
+```
+```{r}
+seg_summ <- function(data, groups) {
+  aggregate(data, list(groups), function(x) mean(as.numeric(x)))  
+}
+```
+
+
+```{r}
+seg_summ(seg_month, seg_month_hc_segment)
+```
+# Plotting results
+```{r}
+plot(jitter(seg_month$mean_price_cost) ~ jitter(seg_month$mean_price_retail), col = seg_month_hc_segment, yaxt = 'n', xaxt = 'n', ylab = '', xlab = '')
+axis(side = 1, at = c(1, 2))
+axis(side = 2, at = c(1, 2))
+```
+# K-Means Clustering
+
+```{r}
+head(seg_month[, .SD, .SDcols = is.numeric])
+set.seed(0)
+seg_k = kmeans(seg[, .SD, .SDcols = is.numeric], centers = 4)
+seg_summ(seg, seg_k$cluster)
+```
+```{r}
+'''
+clusplot(seg, seg_k$cluster, color = TRUE, shade = TRUE,
+         labels = 4, lines = 0, main = 'K-means cluster plot')
+'''
+```
+# Random Forests
+```{r}
+head(seg)
+head(seg[, .SD, .SDcols = is.numeric])
+max(seg$category_id) - min(seg$category_id)
+seg$category_id
+seg_id = aggregate(seg[, .SD, .SDcols = is.numeric],
+                   by = list(seg$category_id),
+                   FUN = mean
+                   )
+seg_id
+```
+```{r}
+#install.packages('randomForest')
+#library(randomForest)
+train_prop = 0.65
+train.cases  <- sample(nrow(seg), nrow(seg)*train_prop)
+seg_train <- seg[ train.cases, ]
+seg_test  <- seg[-train.cases, ]
+seg_forest = randomForest(category_id ~ ., data = seg_train, ntree = 3000)
 ```
 
 

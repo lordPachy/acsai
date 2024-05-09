@@ -1,0 +1,54 @@
+---
+title: "bipartite_pixar"
+format: html
+editor: visual
+---
+
+# Imports
+
+```{r}
+library(igraph)
+load("data/comments_disneypixar.rdata")
+```
+
+Quick check:
+
+```{r}
+head(comments)
+```
+
+# Creating the network
+
+```{r}
+edges = data.frame("from" = comments$from_id, "to" = comments$post_id, stringsAsFactors = F)
+g = graph_from_data_frame(edges, directed = F)
+g
+```
+
+```{r}
+net <- simplify(g, remove.multiple = F, remove.loops = T) 
+```
+
+# Exploring the network
+
+Let's peak at nodes:
+```{r}
+head(V(g))
+```
+now at edges:
+
+```{r}
+head(E(g))
+```
+```{r}
+plot(degree.distribution(g))
+```
+Let's count the two different types of nodes
+```{r}
+table(V(g)$type)
+```
+
+```{r}
+proj = bipartite_projection(g)
+```
+

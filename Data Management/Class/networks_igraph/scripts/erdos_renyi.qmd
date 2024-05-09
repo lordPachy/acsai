@@ -1,0 +1,195 @@
+---
+title: "erdos_renyi"
+format: html
+editor: visual
+---
+
+# Imports
+```{r}
+library(igraph)
+```
+
+
+# Graph models
+
+GNP:
+```{r}
+erP = sample_gnp(n = 30, p = 0.2)
+plot(erP, vertex.size = 6, vertex.label = NA)
+```
+In this way, we are not fixing the number of edges:
+
+```{r}
+c(ecount(erP), ecount(sample_gnp(n = 30, p = 0.2)), ecount(sample_gnp(n = 30, p = 0.2)))
+```
+
+GNM:
+```{r}
+erM = sample_gnm(n = 30, m = 30)
+plot(erM, vertex.size = 6, vertex.label = NA)
+```
+# Erdos Renyi model
+
+```{r}
+gnm_mean_degree = function(n, mean_k){
+  m = round(n * mean_k / 2)
+  g = sample_gnm(n = n, m = m)
+}
+g = gnm_mean_degree(50, 3)
+plot(g, vertex.size = 6, vertex.label = NA, vertex.colour = 'orange')
+```
+## Evolution of the largest connected component of an ER graph
+
+```{r}
+er_lcc = c()
+
+for (p in seq(0, 1, 0.001)){
+  er = sample_gnp(100, p)
+  lcc = max(components(er)$csize)
+  er_lcc = c(er_lcc, lcc)
+}
+plot(x = seq(0, 1, 0.001), y = er_lcc/vcount(er) , xlab = 'p', ylab = 'LCC')
+```
+
+Let's do it again with ggplot
+```{r}
+library(dplyr)
+library(ggplot2)
+tibble(p = seq(0, 1, 0.001), LCC = er_lcc/vcount(er)) %>% 
+  ggplot(aes(x = p, y = LCC)) + geom_point() + theme_classic()
+```
+
+We can also compute the average path length
+
+```{r}
+er_lcc = c()
+er_avpl = c()
+
+set.seed(0)
+for (p in seq(0, 1, 0.01)){
+  er = sample_gnp(100, p)
+  lcc = max(components(er)$csize)
+  avpl = mean_distance(er)
+  er_lcc = c(er_lcc, lcc)
+  er_avpl = c(er_avpl, avpl)
+}
+length(er_avpl)
+length(seq(0, 1, 0.01))
+tibble(p = seq(0, 1, 0.01), avpl = er_avpl) %>% 
+  ggplot(aes(x = p, y = er_avpl)) + geom_point() + 
+  labs(x = 'p', y = 'Average path length') + 
+  theme_classic()
+```
+
+# Watts - Strogatz graph
+
+```{r}
+sw = sample_smallworld(
+  dim = 1,
+  size = 20,
+  p = 0.01,   #probability of rewiring
+  nei = 4   #rewiring in a neighbourhood of +- 4
+)
+plot(sw,
+     vertex.size = 6, vertex.label = NA, layout = layout_in_circle, loops = F, multiple = F)
+```
+Let's look at the degree distribution of the WS model after rewiring
+
+```{r}
+data = c()
+
+for (d in seq(0, 0.2, 0.1)){
+   a = tibble(
+    deg = degree(sample_smallworld(
+        dim = 1,
+        size = 20,
+        nei = 4,
+        p = 0 + d
+      )),
+    type = paste0('p', d)
+  )
+  print(a)
+  bind_rows(data, a)
+}
+
+head(data)
+```
+
+```{r}
+bind_rows(tibble(deg=degree(sample_smallworld(dim=1,size=20,nei=4,p=0)),type = "p0"),
+          tibble(deg=degree(sample_smallworld(dim=1,size=20,nei=4,p=0.1)),type = "p0.1"),
+          tibble(deg=degree(sample_smallworld(dim=1,size=20,nei=4,p=0.2)),type = "p0.2")) %>%
+  ggplot(aes(x=deg)) + geom_histogram() + facet_wrap(vars(type)) + theme_classic()
+```
+
+Let's plot the clustering coefficient and the average path length vs the rewiring probability
+
+```{r}
+ws_cc = numeric()
+ws_av = numeric()
+
+normcc = transitivity(sample_smallworld(
+  dim = 1,
+  size = 100,
+  nei = 4,
+  p = 0,
+  loops = F,
+  multiple = F
+))
+
+normav = mean_distance(sample_smallworld(
+  dim = 1,
+  size = 100,
+  nei = 4,
+  p = 0,
+  loops = F,
+  multiple = F
+))
+
+for (p in seq(0, 1, by = 0.0001)){
+  ws = sample_smallworld(
+    dim = 1,
+    size = 100,
+    nei = 4,
+    p = p,
+    loops = F,
+    multiple = F
+  )
+  cc = transitivity(ws)
+  av = mean_distance(ws)
+  ws_cc = c(ws_cc, cc)
+  ws_av = c(ws_av, av)
+}
+```
+
+```{r}
+p_plot = seq(0, 1, 0.0001)
+tibble(
+  x = c(p_plot, p_plot),
+  y = c(ws_cc/normcc, ws_av/normav),
+  type = c(rep('cc', length(p_plot)), rep('av', length(p_plot)))
+) %>% 
+  ggplot(aes(x = x, y = y, color = type)) +
+           geom_point(size = 0.1, alpha = 0.5) + 
+           scale_x_log10(
+             breaks = scales::trans_breaks("log10", function(x) 10^x),
+             labels = scales::trans_format("log10", scales::math_format(10^.x))) +
+  theme_classic()
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
