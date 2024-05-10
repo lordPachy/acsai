@@ -32,18 +32,23 @@ net <- simplify(g, remove.multiple = F, remove.loops = T)
 # Exploring the network
 
 Let's peak at nodes:
+
 ```{r}
 head(V(g))
 ```
+
 now at edges:
 
 ```{r}
 head(E(g))
 ```
+
 ```{r}
 plot(degree.distribution(g))
 ```
+
 Let's count the two different types of nodes
+
 ```{r}
 table(V(g)$type)
 ```
@@ -51,4 +56,3 @@ table(V(g)$type)
 ```{r}
 proj = bipartite_projection(g)
 ```
-
