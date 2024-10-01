@@ -1,0 +1,203 @@
+---
+title: "Comandi"
+format: html
+editor: visual
+---
+
+# Vettori
+Due comandi che possono essere utili sono i seguenti:
+```{r}
+all()
+```
+per controllare se tutti gli elementi di un vettore soddisfano una certa condizione, e
+```{r}
+any()
+```
+per controllare invece la condizione di esistenza.
+
+Nelle quadre, è possibile scrivere
+```{r}
+which()
+```
+per i condizionali.
+
+Si ricorda come 
+```{r}
+vec = seq(1, 10, 2)
+vec
+```
+generi vettori di lunghezza e salto arbitrario.
+
+Attenzione a 
+```{r}
+vec = 1:10 + 1
+vec
+```
+
+# Matrici
+
+R ragiona per vettori, quindi durante la creazione di una matrice, i dati saranno inseriti per colonna:
+```{r}
+mat1 = matrix(1:24, nrow = 4, ncol = 6)
+mat1
+```
+
+ciò può essere modificato con
+```{r}
+mat2 = matrix(1:24, nrow = 4, ncol = 6, byrow =T)
+mat2
+```
+Per controllare la presenza di un vettore in una matrice, si può anche soltanto
+```{r}
+mat1 == c(1:6)
+```
+
+Il prodotto fra matrici si esegue con
+
+```{r}
+mat3 = mat1 %*% mat2
+mat3
+```
+Il semplice `*` esegue il prodotto elemento per elemento:
+
+```{r}
+mat3bis = t(mat1) * mat2
+mat3bis
+```
+
+
+## Apply
+
+```{r}
+mat_apply = apply(X =mat2, MARGIN = 1, FUN = sum)
+mat_apply
+```
+`MARGIN = 1` denota che l'operazione è eseguita sulle colonne (attraverso le righe)
+
+## Potenza e inversa
+Una matrice alla meno uno corrisponde a elevare alla meno uno ciascuno dei suoi elementi.
+```{r}
+mat2^-1
+```
+mentre `solve` esegue effettivamente l'inversa.
+```{r}
+solve(diag(3))
+```
+
+
+# Diag 
+Attenzione alla differenza fra matrice e vettore!
+```{r}
+diag(matrix(1:4, nrow = 2, ncol = 2))
+```
+```{r}
+diag(c(1, 2, 3))
+```
+```{r}
+diag(3)
+```
+
+
+# Dati mancanti
+Si può controllare l'esistenza con
+```{r}
+vec_na = c(1, 2, 3, NA, 4)
+is.na(vec_na)
+```
+per eseguire qualsiasi tipo di statistica descrittiva su dati mancanti, si può eseguire
+```{r}
+vec_na
+mean(vec_na, na.rm = TRUE)
+```
+o anche
+```{r}
+mean(vec_na[!is.na(vec_na)])
+```
+
+# Data Frame
+
+Controllare il file `Introduzione_SM.R`.
+
+```{r}
+getwd()
+load("Introduzione.RData")
+head(dati.apat)
+```
+Trovare la data e il valore di massima temperatura
+```{r}
+dati.apat[which.max(dati.apat$temp),]
+```
+o direttamente
+```{r}
+dati.apat[which.max(dati.apat$temp), "Data"]
+```
+
+La funzione `attach` inserisce una colonna del dataset nel namespace della sessione.
+
+Attenzione a `detach`! Le modifiche fatte sulle variabili inserite nel namespace **non** hanno effetto sul dataset originale!
+
+# Esercizi
+## 1.3
+Come possiamo verificare se esiste una riga uguale a c(3,9,15,21) in mat2?
+```{r}
+vett = c(3,9,15,21)
+mat2 <- matrix(1:24,nrow=6,ncol=4)
+mat2
+```
+dal momento che si tratta di `c()`, ciò non funzionerà:
+```{r}
+mat2 == vett
+```
+```{r}
+mat2[3, ] == vett
+```
+```{r}
+any(c(F, F, T, F, F, F))
+```
+o anche 
+```{r}
+bool_mat = t(t(mat2) == vett)
+bool_mat
+```
+```{r}
+par_mat =apply(bool_mat, MAR = 1, all)
+```
+```{r}
+any(par_mat)
+```
+
+## Campionamento
+Si estragga un campione con il 10% dei dati di `dati.apat` per poi stimarne la mediana.
+
+```{r}
+set.seed(1212)
+s10 = sample(dati.apat$temp, nrow(dati.apat) / 10)
+s10
+```
+Si noti come il numero di osservazioni sia stato approssimato.
+
+```{r}
+median(s10, na.rm = T)
+```
+Inoltre, `x` deve contenere un vettore o un intero positivo, quindi non può contenere l'intero dataframe.
+
+```{r}
+s11 = sample(x = nrow(dati.apat), size = nrow(dati.apat)/10)
+s11
+```
+e dunque
+```{r}
+dati.apat[s11, ]
+```
+
+
+
+
+
+
+
+
+
+
+
+
