@@ -1,5 +1,0 @@
-Nome,Età,Sesso,Vaccino
-Paolo,36,M,FALSE
-Sara,36,F,FALSE
-Matteo,4,M,TRUE
-Sofia,1,F,TRUE
