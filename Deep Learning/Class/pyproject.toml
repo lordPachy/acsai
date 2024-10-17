@@ -10,6 +10,7 @@ python = "3.11.*"
 d2l = "^1.0.3"
 torch = "^2.4.1"
 torchvision = "^0.19.1"
+numpy = "1.23.5"
 
 
 [build-system]
