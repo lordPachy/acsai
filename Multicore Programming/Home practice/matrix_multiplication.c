@@ -46,6 +46,7 @@ void print_matrix(int** m, int num_rows, int num_cols){
 
     printf("\n");
     printf("I am not blocked anymore");
+    fflush(stdout);
 }
 
 int** matrix_matrix_mul(int** m1, int num_rows_1, int num_cols_1, int** m2, int num_rows_2, int num_cols_2){
