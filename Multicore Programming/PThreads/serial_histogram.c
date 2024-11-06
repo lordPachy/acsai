@@ -1,6 +1,5 @@
 //LIBRARIES
 
-#include <pthread.h>
 #include <stdlib.h>
 #include <time.h>
 #include <stdio.h>
@@ -9,7 +8,6 @@
 
 //STRUCTS AND CUSTOM TYPES
 
-// A struct containing the number of threads and rank position is necessary
 typedef struct process_data_to_hist_args{
     // The starting and ending index to be considered in the data array
     int start_idx;      
@@ -26,12 +24,9 @@ typedef struct process_data_to_hist_args{
 
 //GLOBAL VARIABLES
 
-// It is useful to declare data and (the final) histogram as global variables, in such a way that all threads can access them
+// It is useful to declare data and (the final) histogram as global variables
 int* data;
 int* histogram;
-
-// The mutex is necessarily global
-pthread_mutex_t mut;
 
 
 
@@ -81,7 +76,7 @@ void print_int_vector(int* v, int length){
 void* process_data_to_hist(void* args){
     process_data_args vars = *((process_data_args*) args);
 
-    // Allocating data into the private histogram
+    // Allocating data into the histogram
     int index;
     for (int i = vars.start_idx; i < vars.end_idx; i++){
         // We can avoid using a for loop for the bin calculation
@@ -91,13 +86,6 @@ void* process_data_to_hist(void* args){
         }
         vars.private_his[index] += 1;
     }
-
-    // Adding the partial result to the general histogram
-    pthread_mutex_lock(&mut);
-    for (int i = 0; i < vars.num_bins; i++){
-        histogram[i] += vars.private_his[i];
-    }
-    pthread_mutex_unlock(&mut);
 
     return NULL;
 }
@@ -110,49 +98,25 @@ int main(int argc, char** argv){
     // Measuring time of execution
     clock_t start_t = clock();
 
-    // Insert input data: nubmer of elements, lower and upper bound of data, number of histogram bins and number of threads
-    if (argc != 6){
+    // Insert input data: nubmer of elements, lower and upper bound of data, number of histogram bins
+    if (argc != 5){
         printf("Wrong number of input characters!\n");
     } else {
         int data_length = atoi(argv[1]);
         int data_lowerb = atoi(argv[2]);        // since vectors are random, we are not guaranteed that these are min
         int data_upperb = atoi(argv[3]);        // and max
         int num_bins = atoi(argv[4]);
-        int num_threads = atoi(argv[5]);
 
         // Initializing global variables; the lock, the histogram and random data
-        pthread_mutex_init(&mut, NULL);
         histogram = (int*) malloc(sizeof(int) * num_bins);
         data = random_int_vector(data_length, data_lowerb, data_upperb);
         //print_int_vector(data, data_length);
-
-        // Creating the array of variables that will be used by each thread: thread handles, private histograms and the function args
-        pthread_t** thread_handles = malloc(sizeof(pthread_t*) * num_threads);
-        int** private_hist = (int**) malloc(sizeof(int*) * num_threads);
-        process_data_args* args = (process_data_args*) malloc(sizeof(process_data_args) * num_threads);
         
-        // Creating the threads
-        for (int i = 0; i < num_threads; i++){
-            // Initializing the specific variable for this thread
-            thread_handles[i] = malloc(sizeof(pthread_t));
-            private_hist[i] = (int*) malloc(sizeof(int) * num_bins);
-            args[i] = (process_data_args) {i * data_length / num_threads, (i + 1) * data_length / num_threads, private_hist[i], num_bins, data_lowerb, data_upperb};
+        // Initializing the function arguments
+        process_data_args args = (process_data_args) {0, data_length, histogram, num_bins, data_lowerb, data_upperb};
 
-            // Creating the specific thread
-            pthread_create(thread_handles[i], NULL, process_data_to_hist, (void*) &args[i]);
-        }
-
-        // Stopping all threads and cleaning
-        for (int i = 0; i < num_threads; i++){
-            pthread_join(*thread_handles[i], NULL);
-            free(thread_handles[i]);
-            free(private_hist[i]);
-        }
-
-        free(thread_handles);
-        free(private_hist);
-        free(args);
-        pthread_mutex_destroy(&mut);
+        // Calculating the histogram
+        process_data_to_hist((void*) &args);
 
         // Measuring time of execution
         clock_t end_t = clock();
