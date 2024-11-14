@@ -48,7 +48,7 @@ int** random_int_matrix(int** m, int num_rows, int num_cols){
 
     for (int i = 0; i < num_rows; i++){
         for (int j = 0; j < num_cols; j++){
-            m[i][j] = (int) rand_r(&seed) % (5 + 1);  // it generates numbers between 0 and 100
+            m[i][j] = (int) rand_r(&seed) % (5 + 1);  // it generates numbers between 0 and 5
         }
     }
 
@@ -56,7 +56,7 @@ int** random_int_matrix(int** m, int num_rows, int num_cols){
 }
 
 /**
- * It prints dinamically allocated matrix stored in a pointer to pointers.
+ * It prints a dinamically allocated matrix stored in a pointer to pointers.
  * 
  * Input:
  * - int** m: the matrix to be printed
@@ -111,8 +111,8 @@ void element_cardinal_sum(int** m1, int** m2, int num_rows, int num_cols, int i,
  * Input:
  *  - int** m1 = the matrix with the values inside
  *  - int** m2 = OUT
- *  - int** num_rows = the number of rows of both matrices, which needs to be the same
- *  - int** num_cols = the number of columns of both matrices, which needs to be the same
+ *  - int num_rows = the number of rows of both matrices, which needs to be the same
+ *  - int num_cols = the number of columns of both matrices, which needs to be the same
  *  - int rank = the rank of the process calling the function
  *  - int size = the total number of processes
  * Output:
@@ -145,7 +145,7 @@ void apply_iteration(int** m1, int** m2, int num_rows, int num_cols, int rank, i
  *  - int** base_pointer: the pointer to the start of the matrix
  * 
  * Output:
- *  - int** prev_to_min: an array containing matrices, whose rows will be passed to MPI_send.
+ *  - int** prev_to_min: a matrix which will be passed to MPI_send.
  *                  It corresponds to the address of the first row of the matrix that is needed to calculate the considered portion.
  *                  Note that if rank == 0, this is 0, which is also the same row that is first calculated.
  */
