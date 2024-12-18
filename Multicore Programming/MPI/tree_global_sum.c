@@ -55,8 +55,8 @@ void print_int_vector(int* v, int length){
 
 int main(int argc, char** argv){
     // Input checking
-    if (argc != 5){
-        printf("Wrong number of matrix dimensions\n");
+    if (argc != 4){
+        printf("Wrong number of inputs\n");
         return 0;
     }
 
@@ -88,7 +88,7 @@ int main(int argc, char** argv){
     // Creating data and sending them
     if (rank == 0){
         data = random_int_vector(NULL, data_count, min_meas, max_meas);
-        //print_int_vector(data, data_count);
+        print_int_vector(data, data_count);
         extrema = (int*) malloc (sizeof(int*) * size * 2);
         // Phantom request
         MPI_Request req;
@@ -118,17 +118,40 @@ int main(int argc, char** argv){
 
     // Global sum
     while(1){
-        if (rank > size / 2){
-            dest  = min(rank - (size/2), size/2);
+        if (rank >= size / 2){
+            dest = rank - (size/2);
+            // In case of an odd number of active ranks, the last one needs to send the its data to the size/2-th
+            if (rank == size - 1 && size % 2 == 1){
+                dest = size / 2 - 1;
+            }
+
             MPI_Send(&total, 1, MPI_INT, dest, 0, MPI_COMM_WORLD);
         } else {
             MPI_Recv(&recv_total, 1, MPI_INT, rank + size / 2, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-            if (rank == size / 2 && size % 2 == 1){
+            total += recv_total;
+
+            // In case of an odd number of active ranks, the size/2-th needs to receive the last one as well
+            if (rank == size / 2 - 1 && size % 2 == 1){
                 MPI_Recv(&recv_total, 1, MPI_INT, size - 1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+                total += recv_total;
             }
         }
+
+        // Updating the condition
+        size /= 2;
+        if (size == 1){
+            break;
+        }
     }
-    
+
+    if (rank == 0){
+        printf("The final sum is %d\n", total);
+
+        // Cleaning up
+        free(data);
+        free(extrema);
+    }
+    free(buffer);
 
     MPI_Finalize();
     return 0;

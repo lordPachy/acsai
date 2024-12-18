@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include "my_timer.h"
 
 // FUNCTIONS
 
@@ -79,19 +80,26 @@ int main(int argc, char** argv){
     int max_meas = atoi(argv[3]);
     int bin_count = atoi(argv[4]);
 
+    // Timing
+    double start, stop, endtime;
+
     // Defining communication 
     int* buffer = (int*) malloc(sizeof(int) * (data_count/size));
     int* data;
     int* extrema;
-    int* histogram = (int*) malloc (sizeof(int) * bin_count);
+    // IMPORTANT: histograms are given with the assumption of being set to 0
+    int* histogram = (int*) calloc (sizeof(int), bin_count);
 
     // Creating data and sending them
     if (rank == 0){
         data = random_int_vector(NULL, data_count, min_meas, max_meas);
         //print_int_vector(data, data_count);
+
+        GET_TIME(start);    // timing
+
         extrema = (int*) malloc (sizeof(int*) * size * 2);
-        // Phantom request
-        MPI_Request req;
+        
+        MPI_Request req;    // phantom request
 
         for (int i = 0; i < size; i++){
             extrema[2*i] = data_count / size * i;
@@ -141,6 +149,11 @@ int main(int argc, char** argv){
 
         // Printing the final result
         print_int_vector(histogram, bin_count);
+
+        // Timing
+        GET_TIME(stop);    
+        endtime = stop - start;
+        printf("The final calculation time was %e\n", endtime);
 
         // Cleaning up
         free(recv_buffer);
