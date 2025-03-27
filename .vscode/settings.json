@@ -1,5 +1,5 @@
 {
-    "python.analysis.autoImportCompletions": false,
+    "python.analysis.autoImportCompletions": true,
     "files.associations": {
         "*.Rmd": "rmd",
         "random": "c",
