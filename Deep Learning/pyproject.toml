@@ -9,6 +9,7 @@ readme = "README.md"
 python = ">=3.11, <3.12"
 d2l = "^1.0.3"
 panda = "^0.3.1"
+time-python = "^0.0.17"
 
 
 [build-system]
