@@ -6,9 +6,13 @@ authors = ["lordPachy <francescocalzona03@gmail.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
+<<<<<<< HEAD
 python = "^3.10"
 numpy = "^2.2.4"
 matplotlib = "^3.10.1"
+=======
+python = "^3.12"
+>>>>>>> cec26a5 (Fem)
 ipykernel = "^6.29.5"
 
 
